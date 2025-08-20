@@ -1,0 +1,23 @@
+{
+    "name": "dream-interpretation-server",
+    "version": "1.0.0",
+    "description": "本地解梦API服务器",
+    "main": "localserver.js",
+    "type": "module",
+    "scripts": {
+        "start": "node localserver.js",
+        "dev": "node --watch localserver.js"
+    },
+    "dependencies": {
+        "express": "^4.18.2",
+        "cors": "^2.8.5"
+    },
+    "keywords": [
+        "dream-interpretation",
+        "api",
+        "express",
+        "ai"
+    ],
+    "author": "",
+    "license": "MIT"
+}
