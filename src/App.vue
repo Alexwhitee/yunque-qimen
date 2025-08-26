@@ -10,6 +10,7 @@ import { RouterLink, RouterView } from 'vue-router'
         <RouterLink to="/qimen">奇门</RouterLink>
         <RouterLink to="/dream">AI解梦</RouterLink>
         <RouterLink to="/about">关于</RouterLink>
+        <RouterLink to="/liuyao">六爻</RouterLink>
       </nav>
     </div>
   </header>
