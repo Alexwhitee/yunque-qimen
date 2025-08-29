@@ -54,16 +54,26 @@
     <!-- 奇门局信息（恢复成初始 div 版本） -->
     <a-card v-if="panData" class="section-card">
       <h3 class="section-title">奇门局信息</h3>
+      <h3 class="section-title">1.起局方式：拆补法。2. 寄宫方式：坤宫寄宫。3. 暗干起局：值使门起</h3>
       <div class="qimen-info">
         <div>干支：{{ panData.干支 }}</div>
         <div>节气：{{ panData.節氣 }}</div>
         <div>排局：{{ panData.排局 }}</div>
+        <div>驿马：{{ formattedPanData?.special_stars?.驛馬 }}</div>
         <div v-for="(item, key) in panData.旬空" :key="key">
           {{ key }}：{{ item }}
         </div>
         <div v-for="(item, key) in panData.值符值使" :key="key">
           {{ key }}：{{ item }}
         </div>
+
+<!--        &lt;!&ndash; 添加驿马星信息 &ndash;&gt;-->
+<!--        <div v-if="驿马星信息" class="yima-info">-->
+<!--          <span>驿马星：</span>-->
+<!--          <span class="yima-detail">{{ 驿马星信息.驿马地支 }}</span>-->
+<!--          <span>宫</span>-->
+<!--          <span class="yima-palace">({{ 驿马星信息.驿马宫位 }}宫)</span>-->
+<!--        </div>-->
       </div>
     </a-card>
 
@@ -149,6 +159,17 @@ function paipanNow() {
   timeValue.value = now;
   paipan();
 }
+
+
+
+
+
+
+
+
+
+
+
 
 // 复制JSON和问题函数
 const copyCombinedData = () => {

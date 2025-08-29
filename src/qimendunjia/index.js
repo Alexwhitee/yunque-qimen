@@ -37,6 +37,11 @@ class Qimen {
       星: this.pan_star()[0],
       神: this.pan_god(),
       暗干: this.pan_angan(),
+        門迫: this.pan_menpo(),
+        空亡: this.pan_kongwang(),
+        六击: this.pan_jixing(),
+        宫位五行: this.pan_gong_wuxing(),  // 新增宫位五行
+
       馬星: {
         天馬: this.moonhorse(),
         丁馬: this.dinhorse(),
@@ -45,7 +50,7 @@ class Qimen {
       長生運: this.gong_chengsun(),
     };
     this.g = this.gpan();
-    this.overall = { 時家奇門: this.pan, 金函玉鏡: this.g };
+    this.overall = { 時家奇門: this.p, 金函玉鏡: this.g };
   }
 
   //干支
@@ -436,27 +441,178 @@ class Qimen {
     return Config.zip_dict(gong_reorder, god_order);
   }
 
-  // 暗干
+
+    //門迫
+    pan_menpo() {
+        let menpo_result = {};
+        let door_pan = this.pan_door();
+        let earth_pan = this.pan_earth()[0];
+
+        // 门迫规则：门克宫为门迫
+        let wuxing_map = {
+            '乾': '金', '兌': '金',
+            '坎': '水',
+            '艮': '土', '坤': '土',
+            '震': '木', '巽': '木',
+            '離': '火'
+        };
+
+        let door_wuxing_map = {
+            '休': '水', '生': '土', '傷': '木',
+            '杜': '木', '景': '火', '死': '土',
+            '驚': '金', '開': '金'
+        };
+
+        // 五行相克关系：克者为前，被克者为后
+        let kexing = {
+            '金': '木', '木': '土', '土': '水', '水': '火', '火': '金'
+        };
+
+        for (let gong in door_pan) {
+            if (gong === '中') continue;
+
+            let door = door_pan[gong];
+            let gong_wuxing = wuxing_map[gong];
+            let door_wuxing = door_wuxing_map[door];
+
+            // 判断是否门迫（门克宫）
+            if (kexing[door_wuxing] === gong_wuxing) {
+                menpo_result[gong] = true;
+            } else {
+                menpo_result[gong] = false;
+            }
+        }
+
+        return menpo_result;
+    }
+//空亡
+    pan_kongwang() {
+        // 获取日空的地支
+        let xunkong = this.daykong_shikong();
+        let rikong_zhi = xunkong['時空']; // 日空的地支数组
+
+        // 地支对应宫位的映射
+        let zhi_gong_map = {
+            '子': '坎',
+            '丑': '艮', '寅': '艮',
+            '卯': '震',
+            '辰': '巽', '巳': '巽',
+            '午': '離',
+            '未': '坤', '申': '坤',
+            '酉': '兌',
+            '戌': '乾', '亥': '乾'
+        };
+
+        let kongwang_result = {};
+
+        // 初始化所有宫位为不空亡
+        let all_gongs = ['乾', '兌', '離', '震', '巽', '坎', '艮', '坤', '中'];
+        for (let gong of all_gongs) {
+            kongwang_result[gong] = false;
+        }
+
+        // 标记日空宫位
+        for (let zhi of rikong_zhi) {
+            let gong = zhi_gong_map[zhi];
+            if (gong && kongwang_result.hasOwnProperty(gong)) {
+                kongwang_result[gong] = true;
+            }
+        }
+
+        return kongwang_result;
+    }
+
+
+// 宫位五行
+    pan_gong_wuxing() {
+        let gong_wuxing_result = {};
+
+        // 八宫对应的五行属性
+        let wuxing_map = {
+            '乾': '金',
+            '兌': '金',
+            '坎': '水',
+            '艮': '土',
+            '坤': '土',
+            '震': '木',
+            '巽': '木',
+            '離': '火'
+        };
+
+        // 为每个宫位分配五行属性
+        for (let gong in wuxing_map) {
+            gong_wuxing_result[gong] = wuxing_map[gong];
+        }
+
+        return gong_wuxing_result;
+    }
+
+    // 天干击刑判断（基于六击规则）
+// 天干击刑判断（基于六击规则）
+    pan_jixing() {
+        // 六击规则映射：天干 -> 击刑宫位
+        let liuji_map = {
+            '戊': ['震'],     // 戊六击在三宫（震）
+            '庚': ['艮'],     // 庚六击在八宫（艮）
+            '壬': ['巽'],     // 壬六击在四宫（巽）
+            '癸': ['巽'],     // 癸六击在四宫（巽）
+            '辛': ['離'],     // 辛六击在九宫（离）
+            '己': ['坤']      // 己六击在二宫（坤）
+        };
+
+        let jixing_result = {};
+        let sky_pan = this.pan_sky()[0];  // 修正：获取天盘的第一个元素
+
+        // 初始化所有宫位为不击刑
+        let gong_list = ['乾', '兌', '離', '震', '巽', '坎', '艮', '坤'];
+        for (let gong of gong_list) {
+            jixing_result[gong] = false;
+        }
+
+        // 判断击刑
+        for (let gong in sky_pan) {
+            if (gong === '中') continue;
+
+            let tiangan = sky_pan[gong];  // 天盘天干
+
+            // 检查该天干是否有六击规则
+            if (liuji_map[tiangan]) {
+                let ji_gongs = liuji_map[tiangan];  // 获取该天干击刑的宫位
+
+                // 如果当前宫位在击刑宫位列表中，则为击刑
+                if (ji_gongs.includes(gong)) {
+                    jixing_result[gong] = true;
+                }
+            }
+        }
+
+        return jixing_result;
+    }
+
+
+
+
+   // 暗干
   pan_angan() {
     // 根据当前局的阴阳遁确定天干顺序
     let yingyang = this.qimen_ju_name().slice(0, 2);
     let gans = Config.yingyang_order[yingyang];
-    
+
     // 从值符所在的宫位开始排列
     let zhifu_gong = this.zhifu_n_zhishi()["值符星宮"][1];
-    
+
     // 确定旋转方向
     let rotate = {
       陽遁: Config.clockwise_eightgua,
       陰遁: Config.anti_clockwise_eightgua,
     }[yingyang];
-    
+
     // 时干
     let shigan = this.gangzhi()[3][0];
-    
+
     // 获取地盘信息
     let dipan = this.pan_earth()[0];
-    
+
     // 确定起始宫位
     let start_gong = zhifu_gong;
     // 特殊情况：当时干与值符落宫地盘干相同时，起始位置调整
@@ -467,12 +623,64 @@ class Qimen {
         start_gong = "中";
       }
     }
-    
+
     let gong_reorder = Config.new_list(rotate, start_gong);
     let angan_reorder = Config.new_list(gans, shigan);
-    
+
     return Config.zip_dict(gong_reorder, angan_reorder);
   }
+  //   pan_angan() {
+  //       // 获取值使门宫位
+  //       let zhishi_gong = this.zhifu_n_zhishi()["值使門宮"][1];
+  //
+  //       // 获取时干
+  //       let shigan = this.gangzhi()[3][0];
+  //
+  //       // 获取值使门宫的地盘天干
+  //       let dipan_gan = this.get_dipan_gan(zhishi_gong);
+  //
+  //       // 判断时干与值使门宫地盘天干是否相同
+  //       let start_gong;
+  //       if (shigan !== dipan_gan) {
+  //           // 情况一：不同，从值使门宫起
+  //           start_gong = zhishi_gong;
+  //       } else {
+  //           // 情况二：相同，从中五门宫起
+  //           // 中五宫寄宫规则：阳遁寄艮宫，阴遁寄坤宫
+  //           start_gong = (this.qimen_ju_name()[0] === '陽') ? '艮' : '坤';
+  //       }
+  //
+  //       // 处理寄宫问题 - 确保起始宫位不是中宫
+  //       if (start_gong === '中') {
+  //           start_gong = (this.qimen_ju_name()[0] === '陽') ? '坤' : '坤';
+  //       }
+  //
+  //       // 根据阴阳遁确定旋转方向
+  //       let rotate = (this.qimen_ju_name()[0] === '陽') ?
+  //           Config.clockwise_eightgua :
+  //           Config.anti_clockwise_eightgua;
+  //
+  //       // 固定天干顺序：戊、己、庚、辛、壬、癸、丁、丙、乙
+  //       let fixedGans = ['戊', '己', '庚', '辛', '壬', '癸', '丁', '丙', '乙'];
+  //
+  //       // 从起始宫位开始排列八宫
+  //       let gong_reorder = Config.new_list(rotate, start_gong);
+  //
+  //       // 将固定天干顺序分配到重新排序的宫位中
+  //       let angan_dict = {};
+  //       for (let i = 0; i < gong_reorder.length; i++) {
+  //           angan_dict[gong_reorder[i]] = fixedGans[i];
+  //       }
+  //
+  //       return angan_dict;
+  //   }
+
+// 辅助函数：获取指定宫位的地盘天干
+    get_dipan_gan(gong) {
+        // 这里需要实现获取指定宫位地盘天干的逻辑
+        // 假设this.dipan是一个包含各地盘天干的字典
+        return this.dipan[gong];
+    }
 
   //丁馬
   dinhorse() {
@@ -497,14 +705,40 @@ class Qimen {
   }
 
   //驛馬星
-  hourhorse() {
-    let hourhorsedict = Config.zip_dict(
-      ["申子辰", "寅午戌", "亥卯未", "巳酉丑"],
-      ["寅", "申", "巳", "亥"]
-    );
-    return Config.multi_key_dict_get(hourhorsedict, this.gangzhi()[3][1]);
-  }
+  // hourhorse() {
+  //   let hourhorsedict = Config.zip_dict(
+  //     ["申子辰", "寅午戌", "亥卯未", "巳酉丑"],
+  //     ["寅", "申", "巳", "亥"]
+  //   );
+  //   return Config.multi_key_dict_get(hourhorsedict, this.gangzhi()[3][1]);
+  // }
+// 驛馬星 → 数字宫位
+// 驛馬星 → "寅 8 艮宫"
+    hourhorse() {
+        const hourhorsedict = Config.zip_dict(
+            ["申子辰", "寅午戌", "亥卯未", "巳酉丑"],
+            ["寅", "申", "巳", "亥"]
+        );
+        const branch = Config.multi_key_dict_get(hourhorsedict, this.gangzhi()[3][1]);
 
+        const branchInfo = {
+            子: { num: 1, name: "坎宫" },
+            丑: { num: 8, name: "艮宫" },
+            寅: { num: 8, name: "艮宫" },
+            卯: { num: 3, name: "震宫" },
+            辰: { num: 4, name: "巽宫" },
+            巳: { num: 4, name: "巽宫" },
+            午: { num: 9, name: "離宫" },
+            未: { num: 2, name: "坤宫" },
+            申: { num: 2, name: "坤宫" },
+            酉: { num: 7, name: "兌宫" },
+            戌: { num: 6, name: "乾宫" },
+            亥: { num: 6, name: "乾宫" }
+        };
+
+        const { num, name } = branchInfo[branch];
+        return `${branch} ${num} ${name}`;
+    }
   //九宮長生十二神
   gong_chengsun() {
     //天盘的宫位、天干
